@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Hotel Boutique Casa Nery</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f0f4f8; color: #003366; margin: 0; padding: 0; }
+    header { background-color: #003366; color: white; padding: 20px; text-align: center; }
+    h1 { margin: 0; }
+    .container { padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, select, textarea, button { width: 100%; padding: 8px; margin-top: 5px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #003366; padding: 8px; text-align: left; }
+    th { background-color: #0059b3; color: white; }
+  </style>
+  <!-- Firebase JS SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+<header>
+  <h1>Hotel Boutique Casa Nery</h1>
+</header>
+
+<div class="container">
+  <h2>Registrar Evento</h2>
+  <label>Nombre del Cliente:</label>
+  <input type="text" id="nombre">
+  
+  <label>Teléfono:</label>
+  <input type="text" id="telefono">
+  
+  <label>Encargado del Hotel:</label>
+  <input type="text" id="encargado">
+  
+  <label>Tipo de Evento:</label>
+  <input type="text" id="tipoEvento">
+  
+  <label>Área de Reservación:</label>
+  <select id="area">
+    <option>Deck</option>
+    <option>Restaurante</option>
+    <option>Playa</option>
+    <option>Pergola</option>
+    <option>Picnic</option>
+    <option>Area verde mitad</option>
+    <option>Area verde completa</option>
+  </select>
+  
+  <label>Fecha:</label>
+  <input type="date" id="fecha">
+  
+  <label>Hora:</label>
+  <input type="time" id="hora">
+  
+  <label>Cantidad de Personas:</label>
+  <input type="number" id="cantidadPersonas">
+  
+  <label>Estado:</label>
+  <select id="estado">
+    <option>Abono</option>
+    <option>Cancelado</option>
+  </select>
+  
+  <label>Abono (si aplica):</label>
+  <input type="number" id="abono">
+  
+  <label>Menú:</label>
+  <select id="menu">
+    <option>Menú a la carta</option>
+    <option>Plato de menú de eventos</option>
+  </select>
+  
+  <label>Notas:</label>
+  <textarea id="notas"></textarea>
+  
+  <label>Precio Total:</label>
+  <input type="number" id="precioTotal">
+
+  <button onclick="guardarEvento()">Guardar Evento</button>
+
+  <h2>Eventos Registrados</h2>
+  <table id="tablaEventos">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Teléfono</th>
+        <th>Encargado</th>
+        <th>Tipo</th>
+        <th>Área</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+        <th>Cant. Personas</th>
+        <th>Estado</th>
+        <th>Abono</th>
+        <th>Menú</th>
+        <th>Notas</th>
+        <th>Precio Total</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+  // 🔹 Tu configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyB1fMYvwweFhQ8AIeRyvHug-WKCrz-xE3E",
+    authDomain: "hotel-boutique-casa-nery.firebaseapp.com",
+    databaseURL: "https://hotel-boutique-casa-nery-default-rtdb.firebaseio.com",
+    projectId: "hotel-boutique-casa-nery",
+    storageBucket: "hotel-boutique-casa-nery.firebasestorage.app",
+    messagingSenderId: "766345285008",
+    appId: "1:766345285008:web:5c83f485cd6a2054acb715"
+  };
+
+  // Inicializar Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function guardarEvento() {
+    const evento = {
+      nombre: document.getElementById("nombre").value,
+      telefono: document.getElementById("telefono").value,
+      encargado: document.getElementById("encargado").value,
+      tipoEvento: document.getElementById("tipoEvento").value,
+      area: document.getElementById("area").value,
+      fecha: document.getElementById("fecha").value,
+      hora: document.getElementById("hora").value,
+      cantidadPersonas: document.getElementById("cantidadPersonas").value,
+      estado: document.getElementById("estado").value,
+      abono: document.getElementById("abono").value,
+      menu: document.getElementById("menu").value,
+      notas: document.getElementById("notas").value,
+      precioTotal: document.getElementById("precioTotal").value
+    };
+
+    const nuevaKey = db.ref().child('eventos').push().key;
+    db.ref('eventos/' + nuevaKey).set(evento);
+
+    alert("Evento guardado ✔");
+    cargarEventos();
+  }
+
+  function cargarEventos() {
+    const tabla = document.querySelector("#tablaEventos tbody");
+    tabla.innerHTML = "";
+    db.ref("eventos").once("value", snapshot => {
+      snapshot.forEach(childSnapshot => {
+        const e = childSnapshot.val();
+        const row = tabla.insertRow();
+        row.insertCell().textContent = e.nombre;
+        row.insertCell().textContent = e.telefono;
+        row.insertCell().textContent = e.encargado;
+        row.insertCell().textContent = e.tipoEvento;
+        row.insertCell().textContent = e.area;
+        row.insertCell().textContent = e.fecha;
+        row.insertCell().textContent = e.hora;
+        row.insertCell().textContent = e.cantidadPersonas;
+        row.insertCell().textContent = e.estado;
+        row.insertCell().textContent = e.abono;
+        row.insertCell().textContent = e.menu;
+        row.insertCell().textContent = e.notas;
+        row.insertCell().textContent = e.precioTotal;
+      });
+    });
+  }
+
+  // Cargar eventos al iniciar
+  cargarEventos();
+</script>
+
+</body>
+</html>
